@@ -1,0 +1,41 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - '8000:8000'
+    environment:
+      - KC_URL= http://keycloak:8080
+    networks:
+      - keycloak-nodejs-quickstart
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      - KC_URL= http://keycloak:8080
+    networks:
+      - keycloak-nodejs-quickstart
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.5
+    container_name: keycloak
+    command:
+      - "start-dev"
+      - "--http-port=8080"
+      - "--import-realm"
+    environment:
+      - "KEYCLOAK_IMPORT= /opt/keycloak/data/import/myrealm-realm.json"
+      - "KEYCLOAK_ADMIN=admin"
+      - "KEYCLOAK_ADMIN_PASSWORD=admin"
+    volumes:
+      - ./docker/keycloak:/opt/keycloak/data/import:ro
+    ports:
+      - 8080:8080
+    networks:
+      - keycloak-nodejs-quickstart
+networks:
+  keycloak-nodejs-quickstart:
+    driver: bridge
